@@ -2,7 +2,7 @@
 A python script that scrapes data from https://charts.spotify.com
 
 # Install Required Python Packages
-pip install -r requirements.txt
+This py script does not use any external libraries.
 
 # How to Use
 - Sign Up for Spotify Developer at https://developer.spotify.com/
