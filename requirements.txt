@@ -1,0 +1,4 @@
+httpx
+click
+pydantic
+pydantic-settings
