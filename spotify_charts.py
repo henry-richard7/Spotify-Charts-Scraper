@@ -170,7 +170,7 @@ class SpotifyCharts:
         :return: a list of weekly top 200 albums from spotify charts.
         """
 
-        url = f"https://charts-spotify-com-service.spotify.com/auth/v0/charts/album-{country_code.lower()}-daily/{date_}"
+        url = f"https://charts-spotify-com-service.spotify.com/auth/v0/charts/album-{country_code.lower()}-weekly/{date_}"
 
         async with AsyncClient() as client:
             response = await client.get(url, headers=self.headers)
