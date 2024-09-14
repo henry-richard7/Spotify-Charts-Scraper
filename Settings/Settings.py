@@ -6,3 +6,6 @@ class SpotifySettings(BaseSettings):
     client_secret: str
     redirect_url: str
     redirect_port: int
+
+    class Config:
+        env_file = ".env"
