@@ -21,6 +21,8 @@ CHART_CACHE_TTL = 300
 CHART_REQUEST_INTERVAL = 2.0
 CHART_RATE_LIMIT_MAX_COOLDOWN = 120.0
 _chart_cache: dict[str, tuple[float, dict]] = {}
+_chart_inflight: dict[str, asyncio.Task] = {}
+_chart_inflight_lock = asyncio.Lock()
 _chart_request_lock = asyncio.Lock()
 _next_chart_request_at = 0.0
 
@@ -126,6 +128,20 @@ class SpotifyCharts:
         if cached and cached[0] > monotonic():
             return deepcopy(cached[1])
 
+        async with _chart_inflight_lock:
+            task = _chart_inflight.get(url)
+            if task is None:
+                task = asyncio.create_task(self._fetch_chart_uncached(url))
+                _chart_inflight[url] = task
+        try:
+            return deepcopy(await asyncio.shield(task))
+        finally:
+            if task.done():
+                async with _chart_inflight_lock:
+                    if _chart_inflight.get(url) is task:
+                        _chart_inflight.pop(url, None)
+
+    async def _fetch_chart_uncached(self, url: str) -> dict:
         async with AsyncClient(timeout=15) as client:
             for attempt in range(3):
                 await _wait_for_chart_request_slot()

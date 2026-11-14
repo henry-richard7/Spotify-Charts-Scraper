@@ -272,7 +272,12 @@
         const metadata = payload.displayChart?.chartMetadata || {};
         const entries = payload.entries || [];
         const historyInfo = payload.chartHistory;
-        const date = payload.displayChart?.date || "Latest";
+        const delivery = payload.delivery || {};
+        const sourceTime = delivery.fetchedAt ? new Date(delivery.fetchedAt).toLocaleString() : "Live response";
+        const refreshLabel = delivery.isStale
+          ? delivery.refreshStatus === "failed" ? " · Refresh failed; showing saved snapshot" : " · Refreshing"
+          : "";
+        const date = `${payload.displayChart?.date || "Latest"} · ${delivery.isStale ? "Saved snapshot" : "Updated"} ${sourceTime}${refreshLabel}`;
         const metricLabel = entries[0]?.chartEntryData?.rankingMetric?.type || "RANK";
         byId("chart-title").textContent = metadata.readableTitle || "Spotify chart";
         byId("chart-date-label").textContent = date;
@@ -323,37 +328,64 @@
         button.disabled = true;
         button.innerHTML = '<span class="spinner" aria-hidden="true"></span>Loading';
         hideBanner();
-        byId("section-title").textContent = "Loading chart";
-        byId("summary-meta").textContent = "";
-        byId("chart-title").textContent = "";
-        byId("chart-date-label").textContent = "Loading…";
-        byId("chart-content").className = "empty";
-        byId("chart-content").innerHTML = '<div><span class="empty-icon" aria-hidden="true">…</span><h3>Loading chart</h3><p>Fetching the latest rankings from Spotify Charts.</p></div>';
+        const hadChart = byId("chart-content").classList.contains("table-wrap");
+        if (hadChart) {
+          byId("chart-date-label").textContent = "Loading selection… previous chart remains visible";
+        } else {
+          byId("section-title").textContent = "Loading chart";
+          byId("summary-meta").textContent = "";
+          byId("chart-title").textContent = "";
+          byId("chart-date-label").textContent = "Loading…";
+          byId("chart-content").className = "empty";
+          byId("chart-content").innerHTML = '<div><span class="empty-icon" aria-hidden="true">…</span><h3>Loading chart</h3><p>Fetching the latest rankings from Spotify Charts.</p></div>';
+        }
         byId("history-status").hidden = true;
         try {
-          const payload = await requestJson(`/api/charts?${params}`);
+          let payload = await requestJson(`/api/charts?${params}`);
           if (requestId !== chartLoadSequence) return;
-        rememberChartPayload(byId("chart-type").value, byId("country").value, byId("chart-date").value.trim() || "latest", payload);
-        renderChart(payload);
-        void continueChartHistory(payload, requestId);
+          if (payload.delivery?.isStale) {
+            renderChart(payload);
+            for (let attempt = 0; attempt < 4 && requestId === chartLoadSequence; attempt += 1) {
+              const refreshUrl = `/api/charts/refresh?${params}`;
+              const refresh = await requestJson(refreshUrl, { method: "POST" });
+              if (requestId !== chartLoadSequence) return;
+              if (refresh.status === "complete") {
+                payload = await requestJson(`/api/charts?${params}`);
+                break;
+              }
+              if (refresh.status === "failed") {
+                payload.delivery.refreshStatus = "failed";
+                break;
+              }
+              await new Promise((resolve) => setTimeout(resolve, 1800));
+            }
+          }
+          if (requestId !== chartLoadSequence) return;
+          rememberChartPayload(byId("chart-type").value, byId("country").value, byId("chart-date").value.trim() || "latest", payload);
+          renderChart(payload);
+          void continueChartHistory(payload, requestId);
       } catch (error) {
         if (requestId === chartLoadSequence) {
-          byId("section-title").textContent = "Chart unavailable";
-          byId("summary-meta").textContent = "No chart loaded";
-          byId("chart-title").textContent = "Chart preview";
-          byId("chart-date-label").textContent = "Unavailable";
-          byId("chart-content").className = "empty";
-          const emptyState = document.createElement("div");
-          const icon = document.createElement("span");
-          icon.className = "empty-icon";
-          icon.setAttribute("aria-hidden", "true");
-          icon.textContent = "!";
-          const heading = document.createElement("h3");
-          heading.textContent = "Chart unavailable";
-          const message = document.createElement("p");
-          message.textContent = error.message || "The chart could not be loaded. Try again shortly.";
-          emptyState.append(icon, heading, message);
-          byId("chart-content").replaceChildren(emptyState);
+          if (hadChart) {
+            byId("chart-date-label").textContent = "Update unavailable · previous chart remains visible";
+          } else {
+            byId("section-title").textContent = "Chart unavailable";
+            byId("summary-meta").textContent = "No chart loaded";
+            byId("chart-title").textContent = "Chart preview";
+            byId("chart-date-label").textContent = "Unavailable";
+            byId("chart-content").className = "empty";
+            const emptyState = document.createElement("div");
+            const icon = document.createElement("span");
+            icon.className = "empty-icon";
+            icon.setAttribute("aria-hidden", "true");
+            icon.textContent = "!";
+            const heading = document.createElement("h3");
+            heading.textContent = "Chart unavailable";
+            const message = document.createElement("p");
+            message.textContent = error.message || "The chart could not be loaded. Try again shortly.";
+            emptyState.append(icon, heading, message);
+            byId("chart-content").replaceChildren(emptyState);
+          }
           showBanner(error.message, true);
         }
       } finally {
