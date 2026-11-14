@@ -279,9 +279,6 @@
     } else {
       payload = await fetchAllRegionsOverview(state.cadence, state.entityType, refresh);
     }
-    liveOverview = payload;
-    liveKey = currentKey();
-    liveLoadedAt = Date.now();
     return payload;
   }
 
@@ -327,6 +324,9 @@
     try {
       const payload = await fetchLiveOverview(refresh);
       if (requestId === liveRequest && activePage === "live") {
+        liveOverview = payload;
+        liveKey = currentKey();
+        liveLoadedAt = Date.now();
         renderLive(payload);
         if (payload.marketScope === "global") void loadAllRegionsAutomatically(requestId);
       }
@@ -379,7 +379,11 @@
     try {
       const key = currentKey();
       if (refreshLive || liveKey !== key || Date.now() - liveLoadedAt > 120000) {
-        await fetchLiveOverview(refreshLive);
+        const payload = await fetchLiveOverview(refreshLive);
+        if (requestId !== historyRequest) return;
+        liveOverview = payload;
+        liveKey = key;
+        liveLoadedAt = Date.now();
       }
       if (requestId !== historyRequest) return;
       const params = new URLSearchParams({
@@ -511,6 +515,7 @@
         if (activePage === "live" && liveOverview) renderLive(liveOverview);
         if (activePage === "history" && historyOverview) renderHistory(historyOverview);
       } else if (activePage === "live") {
+        state.marketScope = "global";
         updateLiveActionLabel();
         loadFocusedLive();
       } else if (activePage === "history") {
