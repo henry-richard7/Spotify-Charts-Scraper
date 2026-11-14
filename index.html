@@ -31,16 +31,26 @@
   .focus-chart-hidden[hidden],.focused-page .history-chart-card[hidden]{display:none!important}
   @media(max-width:980px){.focus-card-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
   @media(max-width:620px){.focus-card-grid{grid-template-columns:1fr}.focus-toolbar-row{align-items:flex-start;flex-direction:column;gap:10px}.focus-results-head h2{font-size:18px}.focus-region-count{padding:6px 8px;font-size:10px}.focus-release-heading{padding:14px}.focus-data-row{grid-template-columns:36px minmax(0,1fr) auto;gap:8px;padding:12px}.focus-header-actions{gap:6px}.focus-header-actions .quiet-button{padding:8px 11px}}
-  </style>
+      .sidebar .nav-label:not(:first-child){margin-top:22px}
+      .sidebar .nav-link{padding:9px 12px;font-size:12px}
+      .focus-toolbar [hidden]{display:none}
+      @media(max-width:760px){.sidebar .nav-link{padding:8px 10px}}
+    </style>
   </head>
   <body>
     <div class="shell">
       <aside class="sidebar" aria-label="Primary navigation">
         <div class="brand"><span class="brand-mark" aria-hidden="true">♫</span><span class="brand-name">chartroom</span></div>
         <div>
+          <p class="nav-label">Live charts</p>
+          <a class="nav-link" href="#live-daily-songs" data-page-nav="live-daily-songs"><span class="nav-glyph" aria-hidden="true">♪</span><span class="nav-text">Daily songs</span></a>
+          <a class="nav-link" href="#live-weekly-songs" data-page-nav="live-weekly-songs"><span class="nav-glyph" aria-hidden="true">♪</span><span class="nav-text">Weekly songs</span></a>
+          <a class="nav-link" href="#live-daily-artists" data-page-nav="live-daily-artists"><span class="nav-glyph" aria-hidden="true">◎</span><span class="nav-text">Daily artists</span></a>
+          <a class="nav-link" href="#live-weekly-artists" data-page-nav="live-weekly-artists"><span class="nav-glyph" aria-hidden="true">◎</span><span class="nav-text">Weekly artists</span></a>
+          <a class="nav-link" href="#live-daily-albums" data-page-nav="live-daily-albums"><span class="nav-glyph" aria-hidden="true">▦</span><span class="nav-text">Daily albums</span></a>
+          <a class="nav-link" href="#live-weekly-albums" data-page-nav="live-weekly-albums"><span class="nav-glyph" aria-hidden="true">▦</span><span class="nav-text">Weekly albums</span></a>
           <p class="nav-label">Workspace</p>
-          <a class="nav-link active" href="#charts" data-page-nav="charts" aria-current="page"><span class="nav-glyph" aria-hidden="true">▤</span><span class="nav-text">Charts explorer</span></a>
-          <a class="nav-link" href="#live" data-page-nav="live"><span class="nav-glyph" aria-hidden="true">◉</span><span class="nav-text">Live charts</span></a>
+          <a class="nav-link" href="#charts" data-page-nav="charts"><span class="nav-glyph" aria-hidden="true">▤</span><span class="nav-text">Charts explorer</span></a>
           <a class="nav-link" href="#history" data-page-nav="history"><span class="nav-glyph" aria-hidden="true">⌁</span><span class="nav-text">History</span></a>
         </div>
         <div class="side-note"><strong>Spotify Charts</strong><p>Explore official daily and weekly rankings by country. Data loads directly from Spotify Charts.</p></div>
@@ -68,16 +78,14 @@
         <p class="footnote" id="date-help">Use “latest” or a chart date in YYYY-MM-DD format. Rankings are returned by Spotify Charts; historical availability varies by chart.</p>
       </main>
       <main class="main page-panel focused-page" id="live" data-page-panel="live" hidden>
-        <div class="topline"><span class="eyebrow">Artist chart dashboard</span><div class="focus-header-actions"><button class="quiet-button" id="live-refresh" type="button">Load all regions</button><button class="connect-button" id="live-connect" type="button">Connect Spotify</button></div></div>
+        <div class="topline"><span class="eyebrow" id="live-eyebrow">Daily songs chart</span><div class="focus-header-actions"><button class="quiet-button" id="live-refresh" type="button">Load all regions</button><button class="connect-button" id="live-connect" type="button">Connect Spotify</button></div></div>
         <section class="intro" aria-labelledby="live-title">
-          <div><h1 id="live-title">Live charts<span style="color:var(--lime)">.</span></h1><p>Follow Taylor Swift and Felix, plus the song Unfair, on Global charts and across all regions.</p></div>
+          <div><h1 id="live-title"><span id="live-title-label">Daily songs</span><span style="color:var(--lime)">.</span></h1><p id="live-description">Follow Taylor Swift and Felix, plus the song Unfair, on the Global daily songs chart.</p></div>
           <div><a class="focus-artist-badge" href="https://open.spotify.com/artist/06HL4z0CvFAxyc27GXpf02" target="_blank" rel="noreferrer">Taylor Swift <span aria-hidden="true">↗</span></a> <a class="focus-artist-badge" href="https://open.spotify.com/artist/4UIOuc84ExWojcUzFGtbW8" target="_blank" rel="noreferrer">Felix <span aria-hidden="true">↗</span></a> <a class="focus-artist-badge" href="https://open.spotify.com/track/15fpZUMOQD9ONTjxITFXFT" target="_blank" rel="noreferrer">Unfair <span aria-hidden="true">↗</span></a></div>
         </section>
-        <div class="focus-toolbar" aria-label="Live chart controls">
-          <div class="focus-toolbar-row"><div class="focus-control-group" role="group" aria-label="Chart cadence"><span class="focus-control-label">Cadence</span><div class="focus-segmented"><button class="focus-tab" type="button" data-focus-key="cadence" data-focus-value="daily" aria-pressed="true">Daily</button><button class="focus-tab" type="button" data-focus-key="cadence" data-focus-value="weekly" aria-pressed="false">Weekly</button></div></div></div>
+        <div class="focus-toolbar" id="live-controls" aria-label="Live chart filters">
           <div class="focus-toolbar-row">
-            <div class="focus-control-group" role="group" aria-label="Chart view"><span class="focus-control-label">View</span><div class="focus-segmented"><button class="focus-tab" type="button" data-focus-key="view" data-focus-value="release" aria-pressed="true">Release</button><button class="focus-tab" type="button" data-focus-key="view" data-focus-value="region" aria-pressed="false">Region</button></div></div>
-            <div class="focus-control-group" role="group" aria-label="Release chart type"><span class="focus-control-label">Chart type</span><div class="focus-segmented"><button class="focus-tab" type="button" data-focus-key="entityType" data-focus-value="track" aria-pressed="true">Song</button><button class="focus-tab" type="button" data-focus-key="entityType" data-focus-value="artist" aria-pressed="false">Artist</button><button class="focus-tab" type="button" data-focus-key="entityType" data-focus-value="album" aria-pressed="false">Album</button></div></div>
+            <div class="focus-control-group" id="live-view-control" role="group" aria-label="Chart view"><span class="focus-control-label">View</span><div class="focus-segmented"><button class="focus-tab" type="button" data-focus-key="view" data-focus-value="release" aria-pressed="true">Release</button><button class="focus-tab" type="button" data-focus-key="view" data-focus-value="region" aria-pressed="false">Region</button></div></div>
           </div>
         </div>
         <div class="focus-results-head"><h2 id="live-results-title">Taylor Swift, Felix, and Unfair charting now</h2><span class="focus-results-meta" id="live-results-count">Loading regional charts…</span></div>
