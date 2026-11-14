@@ -490,12 +490,12 @@
 
   function activatePage(page) {
     const liveRoutes = {
-      "live-daily-songs": { cadence: "daily", entityType: "track", title: "Daily songs", type: "songs" },
-      "live-weekly-songs": { cadence: "weekly", entityType: "track", title: "Weekly songs", type: "songs" },
-      "live-daily-artists": { cadence: "daily", entityType: "artist", title: "Daily artists", type: "artists" },
-      "live-weekly-artists": { cadence: "weekly", entityType: "artist", title: "Weekly artists", type: "artists" },
-      "live-daily-albums": { cadence: "daily", entityType: "album", title: "Daily albums", type: "albums" },
-      "live-weekly-albums": { cadence: "weekly", entityType: "album", title: "Weekly albums", type: "albums" },
+      "live-daily-songs": { cadence: "daily", entityType: "track", title: "Daily top songs", type: "songs" },
+      "live-weekly-songs": { cadence: "weekly", entityType: "track", title: "Weekly top songs", type: "songs" },
+      "live-daily-artists": { cadence: "daily", entityType: "artist", title: "Daily top artists", type: "artists" },
+      "live-weekly-artists": { cadence: "weekly", entityType: "artist", title: "Weekly top artists", type: "artists" },
+      "live-daily-albums": { cadence: "daily", entityType: "album", title: "Daily top albums", type: "albums" },
+      "live-weekly-albums": { cadence: "weekly", entityType: "album", title: "Weekly top albums", type: "albums" },
     };
     const routeKey = page === "live" ? "live-daily-songs" : page;
     const route = liveRoutes[routeKey];
@@ -507,7 +507,7 @@
       state.marketScope = "global";
       byId("live-title-label").textContent = route.title;
       byId("live-eyebrow").textContent = `${route.title} chart`;
-      byId("live-description").textContent = `Follow Taylor Swift and Felix, plus the song Unfair, on the Global ${route.cadence} ${route.type} chart.`;
+      byId("live-description").textContent = `Follow Taylor Swift and Felix, plus the song Unfair, on the Global ${route.title.toLowerCase()} chart.`;
       byId("live-view-control").hidden = route.entityType === "artist";
       updateFocusControls();
       updateLiveActionLabel();
