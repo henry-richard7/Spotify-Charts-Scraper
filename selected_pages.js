@@ -489,13 +489,35 @@
   }
 
   function activatePage(page) {
-    const validPage = ["charts", "live", "history"].includes(page) ? page : "charts";
+    const liveRoutes = {
+      "live-daily-songs": { cadence: "daily", entityType: "track", title: "Daily songs", type: "songs" },
+      "live-weekly-songs": { cadence: "weekly", entityType: "track", title: "Weekly songs", type: "songs" },
+      "live-daily-artists": { cadence: "daily", entityType: "artist", title: "Daily artists", type: "artists" },
+      "live-weekly-artists": { cadence: "weekly", entityType: "artist", title: "Weekly artists", type: "artists" },
+      "live-daily-albums": { cadence: "daily", entityType: "album", title: "Daily albums", type: "albums" },
+      "live-weekly-albums": { cadence: "weekly", entityType: "album", title: "Weekly albums", type: "albums" },
+    };
+    const routeKey = page === "live" ? "live-daily-songs" : page;
+    const route = liveRoutes[routeKey];
+    const validPage = route ? "live" : ["charts", "history"].includes(page) ? page : "charts";
+    if (route) {
+      state.cadence = route.cadence;
+      state.entityType = route.entityType;
+      state.view = "release";
+      state.marketScope = "global";
+      byId("live-title-label").textContent = route.title;
+      byId("live-eyebrow").textContent = `${route.title} chart`;
+      byId("live-description").textContent = `Follow Taylor Swift and Felix, plus the song Unfair, on the Global ${route.cadence} ${route.type} chart.`;
+      byId("live-view-control").hidden = route.entityType === "artist";
+      updateFocusControls();
+      updateLiveActionLabel();
+    }
     activePage = validPage;
     document.querySelectorAll("[data-page-panel]").forEach((panel) => {
       panel.hidden = panel.dataset.pagePanel !== validPage;
     });
     document.querySelectorAll("[data-page-nav]").forEach((link) => {
-      const active = link.dataset.pageNav === validPage;
+      const active = link.dataset.pageNav === routeKey;
       link.classList.toggle("active", active);
       if (active) link.setAttribute("aria-current", "page");
       else link.removeAttribute("aria-current");
